@@ -1,5 +1,5 @@
 import { Workspace } from "@rbxts/services";
-import { EasyPath } from "../tower-defense-path";
+import { EasyPath } from "../easy-path";
 
 const Points = Workspace.FindFirstChild("Points") as Folder;
 const nodes = [] as CFrame[];
@@ -13,4 +13,15 @@ Points.GetChildren().forEach((point) => {
 
 const path = new EasyPath(nodes);
 path.Visualize();
-print(path.GetLength());
+
+const part = new Instance("Part", Workspace);
+part.Size = Vector3.one;
+part.Anchored = true;
+part.CanCollide = false;
+
+let dist = 0;
+while (dist <= path.GetLength()) {
+	dist += 1;
+	part.CFrame = path.CalculateCFrameByLength(dist, -1);
+	task.wait(0.1);
+}
