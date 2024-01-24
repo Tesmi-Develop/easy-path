@@ -2,7 +2,7 @@ import BezierCurve from "@rbxts/bezier";
 import Intersection from "./Intersection";
 import { Workspace } from "@rbxts/services";
 
-interface INode {
+export interface INode {
 	CFrame: CFrame;
 	Progress: number;
 	Length: number;
