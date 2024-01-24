@@ -1,6 +1,6 @@
 {
   "name": "@rbxts/easy-path",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "This package will help you build paths with smooth turns",
   "main": "out/init.lua",
   "scripts": {
