@@ -29,7 +29,7 @@ while (dist <= path.GetLength()) {
 
 ## API
 
-* new EasyPath(cframes)
+* new EasyPath(cframes: CFrame[])
 
 Takes an array of cframes to be used as waypoints and returns a path object.
 
