@@ -6,8 +6,8 @@ A code snippet showing how to set up and use EasyPath.
 
 ```ts
 const cframes = [
-	new CFrame(11.39, 0.5, -14.8),
-	new CFrame(11.39, 0.5, -30.03),
+	new CFrame(new Vector3(11.39, 0.5, -14.8)),
+	new CFrame(new Vector3(11.39, 0.5, -30.03)),
 	new CFrame(13.7, 0.5, -32.44).mul(CFrame.fromOrientation(0, math.rad(90), 0))
 ]
 
@@ -22,7 +22,7 @@ part.CanCollide = false;
 let dist = 0;
 while (dist <= path.GetLength()) {
 	dist += 1;
-	part.CFrame = path.CalculateCFrameByLength(dist, -1);
+	part.CFrame = path.CalculateCFrameByLength(dist);
 	task.wait(0.1);
 }
 ```

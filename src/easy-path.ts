@@ -40,7 +40,8 @@ export class EasyPath {
 		t = math.clamp(t, 0, 1);
 		const isLastNode = t === 1;
 		const index = math.min(math.floor(t * this.countNormalizedNodes), this.countNormalizedNodes - 1);
-		const link = this.normalizedNodes[index];
+		// eslint-disable-next-line prettier/prettier
+		const link = this.normalizedNodes[(!isLastNode && t < 1 && index + 1 === this.countNormalizedNodes) ? index - 1 : index];
 		const node = this.nodes[link];
 		const nextNode = isLastNode ? this.nodes[link] : this.nodes[link + 1];
 		const normilizeT = isLastNode ? 1 : (t - node.Progress) / (nextNode.Progress - node.Progress);
