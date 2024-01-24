@@ -1,7 +1,7 @@
 {
-  "name": "@rbxts/package-name",
+  "name": "@rbxts/easy-path",
   "version": "1.0.0",
-  "description": "",
+  "description": "This package will help you build paths with smooth turns",
   "main": "out/init.lua",
   "scripts": {
     "build": "rbxtsc",
@@ -9,9 +9,14 @@
     "test:watch": "rbxtsc -w --type=game -p test -i test/include",
     "serve": "rojo serve test/default.project.json"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "EasyPath",
+    "Path",
+    "Tower defense"
+  ],
+  "repository": "https://github.com/Tesmi-Develop/easy-path",
+  "author": "tesmi",
+  "license": "MIT",
   "types": "out/index.d.ts",
   "files": [
     "out",
