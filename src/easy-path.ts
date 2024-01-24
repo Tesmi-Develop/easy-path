@@ -168,6 +168,16 @@ export class EasyPath {
 				const endPosition = positions[index + 1];
 
 				this.length += endPosition.sub(position).Magnitude;
+
+				if (index === 0) {
+					this.nodes.push({
+						CFrame: currentNode,
+						Progress: 0,
+						Length: 0,
+					});
+					return;
+				}
+
 				this.nodes.push({
 					CFrame: CFrame.lookAt(position, endPosition),
 					Progress: 0,
