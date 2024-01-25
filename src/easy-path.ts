@@ -1,6 +1,7 @@
 import BezierCurve from "@rbxts/bezier";
 import Intersection from "./Intersection";
 import { Workspace } from "@rbxts/services";
+import { DeepCloneTable, IsNaN } from "./utility";
 
 export interface INode {
 	CFrame: CFrame;
@@ -10,8 +11,6 @@ export interface INode {
 
 const ANGLE_OFFSET = 2;
 const BEZIER_PROGRESS = 0.1;
-
-const IsNaN = (number: number) => number !== number;
 
 export class EasyPath {
 	private points: CFrame[];
@@ -23,20 +22,41 @@ export class EasyPath {
 	private countNodes = 0;
 	private countNormalizedNodes = 0;
 	private pathFolder?: Folder;
+	private isCompiled = false;
+	private nodeCurves: { Start: number; End: number }[] = [];
+	private directNodes: number[] = [];
 
 	constructor(nodes: CFrame[]) {
 		this.points = table.clone(nodes);
-		this.compileNodes();
+	}
+
+	/**
+	 * Clones the EasyPath object.
+	 *
+	 * @return {EasyPath} The cloned EasyPath object
+	 */
+	public Clone(): EasyPath {
+		const clone = new EasyPath(this.points);
+		clone.points = table.clone(this.points);
+		clone.nodes = DeepCloneTable(this.nodes);
+		clone.normalizedNodes = DeepCloneTable(this.normalizedNodes);
+		clone.length = this.length;
+		clone.minIteractionAmount = this.minIteractionAmount;
+		clone.countNodes = this.countNodes;
+		clone.countNormalizedNodes = this.countNormalizedNodes;
+		clone.isCompiled = this.isCompiled;
+
+		return clone;
 	}
 
 	/**
 	 * Calculates the CFrame at a given time, with an optional deviation.
 	 *
 	 * @param {number} t - The time parameter
-	 * @param {number} deviation - The deviation (default 0)
 	 * @return {CFrame} The calculated CFrame
 	 */
-	public CalculateCFrame(t: number, deviation: number = 0): CFrame {
+	public CalculateCFrame(t: number): CFrame {
+		this.assertCompileStatus();
 		t = math.clamp(t, 0, 1);
 		const isLastNode = t === 1;
 		const index = math.min(math.floor(t * this.countNormalizedNodes), this.countNormalizedNodes - 1);
@@ -45,20 +65,19 @@ export class EasyPath {
 		const node = this.nodes[link];
 		const nextNode = isLastNode ? this.nodes[link] : this.nodes[link + 1];
 		const normilizeT = isLastNode ? 1 : (t - node.Progress) / (nextNode.Progress - node.Progress);
-		const finalPoint = node.CFrame.Lerp(nextNode.CFrame, normilizeT);
 
-		return finalPoint.add(finalPoint.RightVector.mul(deviation));
+		return node.CFrame.Lerp(nextNode.CFrame, normilizeT);
 	}
 
 	/**
 	 * Calculate the CFrame using the given length and deviation.
 	 *
 	 * @param {number} length - the length parameter
-	 * @param {number} deviation - the deviation parameter, defaults to 0
 	 * @return {CFrame} the calculated CFrame
 	 */
-	public CalculateCFrameByLength(length: number, deviation: number = 0): CFrame {
-		return this.CalculateCFrame(length / this.length, deviation);
+	public CalculateCFrameByLength(length: number): CFrame {
+		this.assertCompileStatus();
+		return this.CalculateCFrame(length / this.length);
 	}
 
 	/**
@@ -67,6 +86,7 @@ export class EasyPath {
 	 * @return {number} the length of path.
 	 */
 	public GetLength(): number {
+		this.assertCompileStatus();
 		return this.length;
 	}
 
@@ -76,6 +96,7 @@ export class EasyPath {
 	 * @return {ReadonlyArray<Readonly<INode>>}
 	 */
 	public GetNodes(): ReadonlyArray<Readonly<INode>> {
+		this.assertCompileStatus();
 		return this.nodes as ReadonlyArray<Readonly<INode>>;
 	}
 
@@ -91,6 +112,7 @@ export class EasyPath {
 		color: Color3 = Color3.fromRGB(163, 162, 165),
 		progressInteraction: number = 0.01,
 	) {
+		this.assertCompileStatus();
 		if (!this.pathFolder) {
 			this.pathFolder = new Instance("Folder", Workspace);
 			this.pathFolder.Name = "PathVisualizer";
@@ -125,6 +147,19 @@ export class EasyPath {
 		this.visualizingParts.forEach((part) => part.Destroy());
 	}
 
+	/**
+	 * Compile the nodes.
+	 */
+	public Compile() {
+		if (this.isCompiled) return this;
+		this.isCompiled = true;
+		this.createNodes();
+		this.calculetePropsForNodes();
+		this.compileNormalizedNodes();
+
+		return this;
+	}
+
 	private createNodes() {
 		const angleOffset = math.rad(ANGLE_OFFSET);
 
@@ -153,6 +188,7 @@ export class EasyPath {
 					Progress: 0,
 					Length: 0,
 				});
+				this.directNodes.push(this.nodes.size() - 1);
 				return;
 			}
 
@@ -163,8 +199,16 @@ export class EasyPath {
 				positions.push(curve.calculate(i));
 			}
 
+			const curveInfo = {
+				Start: 0,
+				End: 0,
+			};
+
 			positions.forEach((position, index) => {
-				if (index + 1 === positions.size()) return;
+				if (index + 1 === positions.size()) {
+					curveInfo.End = this.nodes.size() - 1;
+					return;
+				}
 				const endPosition = positions[index + 1];
 
 				this.length += endPosition.sub(position).Magnitude;
@@ -175,6 +219,7 @@ export class EasyPath {
 						Progress: 0,
 						Length: 0,
 					});
+					curveInfo.Start = this.nodes.size() - 1;
 					return;
 				}
 
@@ -184,6 +229,8 @@ export class EasyPath {
 					Length: 0,
 				});
 			});
+
+			print(curveInfo);
 		});
 
 		this.countNodes = this.nodes.size();
@@ -217,6 +264,10 @@ export class EasyPath {
 		});
 	}
 
+	private assertCompileStatus() {
+		assert(this.isCompiled, "Nodes must be compiled before use");
+	}
+
 	private compileNormalizedNodes() {
 		assert(this.minIteractionAmount > 0, "minIteractionAmount must be greater than 0");
 		let totalProgress = 0;
@@ -241,11 +292,5 @@ export class EasyPath {
 		}
 
 		this.countNormalizedNodes = this.normalizedNodes.size();
-	}
-
-	private compileNodes() {
-		this.createNodes();
-		this.calculetePropsForNodes();
-		this.compileNormalizedNodes();
 	}
 }

@@ -6,8 +6,8 @@ A code snippet showing how to set up and use EasyPath.
 
 ```ts
 const cframes = [
-	new CFrame(new Vector3(11.39, 0.5, -14.8)),
-	new CFrame(new Vector3(11.39, 0.5, -30.03)),
+	new CFrame(11.39, 0.5, -14.8),
+	new CFrame(11.39, 0.5, -30.03),
 	new CFrame(13.7, 0.5, -32.44).mul(CFrame.fromOrientation(0, math.rad(90), 0))
 ]
 
@@ -41,6 +41,6 @@ Takes in a t value from 0-1 and returns a uniform cframe across the path object.
   
 Takes the path length and returns a uniform frame over the entire path object.
 
-* Path:GetPathLength()
+* Path:GetPathLength(deviation?: number)
 
 Returns the path objects length.

@@ -11,7 +11,7 @@ Points.GetChildren().forEach((point) => {
 	nodes.push(point.CFrame);
 });
 
-const path = new EasyPath(nodes);
+const path = new EasyPath(nodes).Compile();
 path.Visualize();
 
 const part = new Instance("Part", Workspace);
@@ -21,7 +21,7 @@ part.CanCollide = false;
 
 let dist = 0;
 while (dist <= path.GetLength()) {
-	dist += 1;
-	part.CFrame = path.CalculateCFrameByLength(dist, -1);
-	task.wait(0.1);
+	dist += 0.5;
+	part.CFrame = path.CalculateCFrameByLength(dist);
+	task.wait(0.05);
 }
