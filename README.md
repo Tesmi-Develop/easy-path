@@ -33,14 +33,14 @@ while (dist <= path.GetLength()) {
 
 Takes an array of cframes to be used as waypoints and returns a path object.
 
-* Path.CalculateCFrame(t: number, deviation?: number)
+* Path.CalculateCFrame(t: number)
   
 Takes in a t value from 0-1 and returns a uniform cframe across the path object.
 
-* Path.CalculateCFrameByLength(lenght: number, deviation?: number)
+* Path.CalculateCFrameByLength(lenght: number)
   
 Takes the path length and returns a uniform frame over the entire path object.
 
-* Path:GetPathLength(deviation?: number)
+* Path:GetPathLength()
 
 Returns the path objects length.
